@@ -1,35 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.js
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Login from "./pages/Auth/Login";
+import Catalog from "./pages/Public/Catalog";
+import Cart from "./pages/Public/Cart";
+import AboutUs from "./pages/Public/AboutUs";
+import About from "./pages/Public/About";
+import CatalogManagement from "./pages/Admin/CatalogManagement";
+import WhatsAppSettings from "./pages/Admin/WhatsAppSettings";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminProductForm from "./pages/Admin/AdminProductForm.jsx";
+import ProductDetail from "./pages/Public/ProductDetail.jsx";
+import Marquee from "./pages/Admin/Marquee.jsx";
+import MarqueeTipTap from "./pages/Admin/MarqueeTipTap.jsx";
 
 function App() {
-  const [count, setCount] = useState(0)
+    return (
+        <BrowserRouter>
+            <Layout>
+                <Routes>
+                    {/* Páginas públicas */}
+                    <Route path="/" element={<Catalog />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/sobre-nosotros" element={<AboutUs />} />
+                    <Route path="/acerca-de" element={<About />} />
+                    <Route path="/product/:productId" element={<ProductDetail />} />
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+                    {/* Auth */}
+                    <Route path="/login" element={<Login />} />
+
+                    {/* Admin privadas */}
+                    <Route
+                        path="/admin/catalog"
+                        element={
+                            <ProtectedRoute>
+                                <CatalogManagement />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/supercatalog"
+                        element={
+                            <ProtectedRoute>
+                                <AdminProductForm />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/banner"
+                        element={
+                            <ProtectedRoute>
+                                <MarqueeTipTap />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/whatsapp"
+                        element={
+                            <ProtectedRoute>
+                                <WhatsAppSettings />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* catch-all */}
+                    <Route path="*" element={<div>Página no encontrada</div>} />
+                </Routes>
+            </Layout>
+        </BrowserRouter>
+    );
 }
 
-export default App
+export default App;
