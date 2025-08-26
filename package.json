@@ -13,6 +13,8 @@
     "@font/nunito": "^1.0.3",
     "@supabase/supabase-js": "^2.49.1",
     "@tailwindcss/vite": "^4.0.12",
+    "@tiptap/extension-bubble-menu": "^3.3.0",
+    "@tiptap/extension-hard-break": "^3.3.0",
     "@tiptap/react": "^3.3.0",
     "@tiptap/starter-kit": "^3.3.0",
     "autoprefixer": "^10.4.21",

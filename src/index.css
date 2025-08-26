@@ -27,6 +27,20 @@ body {
   transform: rotate(45deg);
 }
 
+.tiptap-editor {
+  border: 2px solid #cbd5e1;      /* Tailwind gray-300 */
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-height: 300px;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.tiptap-editor:focus-within {
+  border-color: #3b82f6;          /* Tailwind blue-500 */
+  box-shadow: 0 0 0 2px #a7f3d0;  /* Soft focus ring */
+}
 
 .btn {
   padding: 6px 12px;

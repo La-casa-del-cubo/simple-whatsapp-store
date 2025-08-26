@@ -3,7 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import { SupabaseContext } from "../../contexts/SupabaseContext";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import {MenuBar} from "../../components/MenuBar.jsx";
+import HardBreak from '@tiptap/extension-hard-break'
+import { MenuBar } from "../../components/MenuBar.jsx"; // Asegúrate de que MenuBar ahora exporta el BubbleMenu
+
+const CustomHardBreak = HardBreak.extend({
+    addKeyboardShortcuts() {
+        return {
+            Enter: () => this.editor.commands.setHardBreak(),
+            'Shift-Enter': () => this.editor.commands.setHardBreak(),
+        }
+    },
+})
 
 export default function PageConfigurationAdmin() {
     const { page_name } = useParams();
@@ -20,7 +30,12 @@ export default function PageConfigurationAdmin() {
 
     const [initialContent, setInitialContent] = useState("<p></p>");
     const editor = useEditor({
-        extensions: [StarterKit],
+        extensions: [
+            StarterKit.configure({
+                hardBreak: false
+            }),
+            CustomHardBreak
+        ],
         content: initialContent,
         onUpdate: ({ editor }) => setInitialContent(editor.getHTML()),
     });
@@ -40,7 +55,6 @@ export default function PageConfigurationAdmin() {
 
             if (error) {
                 if (error.code === "PGRST116") {
-                    // No encontrado, nuevo registro
                     setTitle("");
                     setWhatsappLink("");
                     setShowInMenu(false);
@@ -91,7 +105,6 @@ export default function PageConfigurationAdmin() {
                 .upsert(payload, { onConflict: "page_name" });
 
             if (error) throw error;
-
             alert("Página guardada con éxito");
             navigate("/admin/pages");
         } catch (e) {
@@ -110,7 +123,6 @@ export default function PageConfigurationAdmin() {
             <h1 className="text-2xl font-bold mb-6">
                 {page_name ? "Editar Página" : "Nueva Página"}
             </h1>
-
             {error && <div className="mb-4 text-red-600 font-semibold">{error}</div>}
 
             <label className="block mb-2 font-semibold">Identificador (slug)</label>
@@ -136,7 +148,11 @@ export default function PageConfigurationAdmin() {
             <MenuBar editor={editor} />
             <EditorContent
                 editor={editor}
-                className="border p-4 rounded min-h-[300px] mb-6"
+                className="tiptap-editor caret-blue-600 border-2 border-gray-300
+    focus:border-blue-500 focus:ring focus:ring-blue-200
+    outline-none
+    rounded
+    p-4 min-h-[300px] mb-6"
             />
 
             {pageName === "contacto" && (
@@ -166,7 +182,11 @@ export default function PageConfigurationAdmin() {
                 disabled={loading}
                 className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
             >
-                {loading ? "Guardando..." : page_name ? "Actualizar Página" : "Crear Página"}
+                {loading
+                    ? "Guardando..."
+                    : page_name
+                        ? "Actualizar Página"
+                        : "Crear Página"}
             </button>
         </div>
     );

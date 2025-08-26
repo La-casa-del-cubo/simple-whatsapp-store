@@ -30,7 +30,7 @@ export default function PublicPage() {
     return (
         <article className="prose max-w-none mx-auto p-6">
             <DynamicCubeTitle title={page.title} isDynamic={true}/>
-            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }} />
+            <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }} />
         </article>
     )
 }
