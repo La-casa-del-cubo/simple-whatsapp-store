@@ -13,6 +13,7 @@ export default function AdminSideMenu({ isAdmin }) {
         { name: "Gestión del Catálogo", path: "/admin/catalog" },
         { name: "Catálogo", path: "/" },
         { name: "Configuración WhatsApp", path: "/admin/whatsapp" },
+        { name: "Páginas", path: "/admin/pages" },
     ];
 
     return (

@@ -6,6 +6,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ProductImagesCarousel from "../../components/ProductImageCarousel.jsx";
+import DynamicCubeTitle from "../../components/DynamicCubeTitle.jsx";
 
 export default function ProductDetail() {
     const supabase = useContext(SupabaseContext);
@@ -151,7 +152,7 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="flex flex-col flex-1">
-                    <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
+                    <DynamicCubeTitle title={product.name} />
 
                     <div className="mb-4 text-gray-700">{product.description || "Sin descripción."}</div>
 

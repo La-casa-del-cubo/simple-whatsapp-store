@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { SupabaseContext } from "../../contexts/SupabaseContext";
+import {useImageUrls} from "../../hooks/useImagesUrls.jsx";
 
 export default function CatalogManagement() {
     const supabase = useContext(SupabaseContext);
@@ -34,7 +35,9 @@ export default function CatalogManagement() {
     const [newShapeError, setNewShapeError] = useState(null);
 
     // For image upload & preview
-    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [existingImages, setExistingImages] = useState([]); // URLs ya guardadas
+    const [imagesToDelete, setImagesToDelete] = useState([]); // URLs marcadas para borrar
+    const [selectedFiles, setSelectedFiles] = useState([]); // nuevas imágenes locales para subir
     const [previewUrls, setPreviewUrls] = useState([]);
     const [uploading, setUploading] = useState(false);
 
@@ -191,22 +194,30 @@ export default function CatalogManagement() {
             shape_id: null,
         });
         setError(null);
+
+        // Limpiar imágenes
         setSelectedFiles([]);
         previewUrls.forEach((url) => URL.revokeObjectURL(url));
         setPreviewUrls([]);
+        setExistingImages([]);
+        setImagesToDelete([]);
     }
 
     async function handleSubmit(e) {
         e.preventDefault();
         setError(null);
+
         if (!formData.name || !formData.price) {
             setError("El nombre y precio son obligatorios.");
             return;
         }
+
         setUploading(true);
         try {
             let productId = formData.id;
+
             if (productId) {
+                // Actualizar producto
                 const { error } = await supabase
                     .from("products")
                     .update({
@@ -220,7 +231,11 @@ export default function CatalogManagement() {
                     })
                     .eq("id", productId);
                 if (error) throw error;
+
+                // Borra imágenes marcadas para eliminar
+                await deleteImages(imagesToDelete);
             } else {
+                // Crear producto nuevo
                 const { data, error } = await supabase
                     .from("products")
                     .insert([
@@ -239,7 +254,11 @@ export default function CatalogManagement() {
                 if (error) throw error;
                 productId = data.id;
             }
-            // Upload images and save omitted for brevity
+
+            // Subir imágenes nuevas y guardar registros
+            const newImageUrls = await uploadImages(productId);
+            await saveProductImages(productId, newImageUrls);
+
             resetForm();
             fetchData();
             alert("Producto guardado con éxito.");
@@ -263,13 +282,99 @@ export default function CatalogManagement() {
         setError(null);
         setSelectedFiles([]);
         setPreviewUrls([]);
+        // Aquí debes cargar las imágenes existentes del producto
+        // Supongamos que tienes un endpoint o forma de obtener URLs guardadas
+        const { data: imagesData, error } = await supabase
+            .from("product_images")
+            .select("image_url")
+            .eq("product_id", product.id);
+        if (!error && imagesData) {
+            const urls = imagesData.map((img) => img.image_url);
+            setExistingImages(urls);
+            setImagesToDelete([]);
+        } else {
+            setExistingImages([]);
+            setImagesToDelete([]);
+        }
     }
+    const imageUrls = useImageUrls(existingImages, supabase);
 
     async function handleDelete(id) {
         if (!window.confirm("¿Estás seguro de eliminar este producto?")) return;
         const { error } = await supabase.from("products").delete().eq("id", id);
         if (error) setError(error.message);
         else fetchData();
+    }
+
+    function handleFileChange(e) {
+        const files = Array.from(e.target.files);
+        const validImages = files.filter((file) => file.type.startsWith("image/"));
+        if (validImages.length !== files.length) {
+            alert("Sólo se permiten archivos de imagen.");
+            return;
+        }
+
+        const newPreviewUrls = validImages.map((file) => URL.createObjectURL(file));
+        setSelectedFiles((prev) => [...prev, ...validImages]);
+        setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    }
+
+    function removeNewImage(index) {
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+        setPreviewUrls((prev) => {
+            URL.revokeObjectURL(prev[index]);
+            return prev.filter((_, i) => i !== index);
+        });
+    }
+
+    function removeExistingImage(urlToRemove) {
+        setImagesToDelete((prev) => [...prev, urlToRemove]);
+        setExistingImages((prev) => prev.filter((url) => url !== urlToRemove));
+    }
+
+    async function uploadImages() {
+        if (selectedFiles.length === 0) return [];
+
+        const uploadedUrls = [];
+
+        for (const file of selectedFiles) {
+            const fileExt = file.name.split(".").pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("product-images")
+                .upload(fileName, file, { cacheControl: "3600", upsert: false });
+
+            if (uploadError) throw new Error(`Error subiendo imagen ${file.name}: ${uploadError.message}`);
+
+            const { data: urlData } = supabase.storage
+                .from("product-images")
+                .getPublicUrl(fileName);
+
+            uploadedUrls.push(urlData.publicUrl);
+        }
+        return uploadedUrls;
+    }
+
+    async function deleteImages(urls) {
+        if (!urls.length) return;
+        const { error } = await supabase
+            .from("product_images")
+            .delete()
+            .in("image_url", urls);
+        if (error) throw error;
+    }
+
+    async function saveProductImages(productId, imageUrls) {
+        if (imageUrls.length === 0) return;
+
+        const inserts = imageUrls.map((url) => ({
+            product_id: productId,
+            image_url: url,
+        }));
+
+        const { error } = await supabase.from("product_images").insert(inserts);
+        if (error) throw error;
     }
 
     return (
@@ -415,42 +520,45 @@ export default function CatalogManagement() {
                         </select>
                     </div>
                 </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-semibold mb-2">Imágenes existentes</label>
+                    {existingImages.length === 0 && <p className="text-gray-500">No hay imágenes.</p>}
+                    <div className="flex flex-wrap gap-3">
+                        {existingImages.map((url, i) => (
+                            <div key={url} className="relative w-24 h-24 border rounded overflow-hidden">
+                                <img src={imageUrls[i]} alt={`Imagen ${i + 1}`} className="w-full h-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={() => removeExistingImage(url)}
+                                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700"
+                                    aria-label="Eliminar imagen"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
                 {/* Images upload */}
                 <div>
-                    <label className="block text-sm font-semibold mb-2 mt-6">Imágenes</label>
+                    <label className="block text-sm font-semibold mb-2">Agregar nuevas imágenes</label>
                     <input
                         type="file"
                         multiple
                         accept="image/*"
-                        onChange={(e) => {
-                            const files = Array.from(e.target.files);
-                            const validImages = files.filter((f) => f.type.startsWith("image/"));
-                            if (validImages.length !== files.length) {
-                                alert("Solo se permiten archivos de imagen");
-                                return;
-                            }
-                            const newPreviews = validImages.map((file) => URL.createObjectURL(file));
-                            setSelectedFiles((prev) => [...prev, ...validImages]);
-                            setPreviewUrls((prev) => [...prev, ...newPreviews]);
-                        }}
+                        onChange={handleFileChange}
                         disabled={uploading}
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400"
+                        className="mb-3 w-full border rounded cursor-pointer"
                     />
                     {previewUrls.length > 0 && (
-                        <div className="flex flex-wrap gap-3 mt-3">
+                        <div className="flex flex-wrap gap-3">
                             {previewUrls.map((url, i) => (
                                 <div key={i} className="relative w-24 h-24 border rounded overflow-hidden">
-                                    <img alt={`Preview ${i + 1}`} src={url} className="w-full h-full object-cover" />
+                                    <img src={url} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            setSelectedFiles((prev) => prev.filter((_, idx) => idx !== i));
-                                            setPreviewUrls((prev) => {
-                                                URL.revokeObjectURL(prev[i]);
-                                                return prev.filter((_, idx) => idx !== i);
-                                            });
-                                        }}
+                                        onClick={() => removeNewImage(i)}
                                         className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700"
                                         aria-label="Eliminar imagen"
                                     >

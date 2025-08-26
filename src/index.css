@@ -23,6 +23,37 @@ body {
   font-style: normal;
 }
 
+.rotate-45 {
+  transform: rotate(45deg);
+}
+
+
+.btn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db; /* gray-300 */
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+  transition: background-color 0.15s;
+}
+
+.btn:hover {
+  background-color: #e5e7eb; /* gray-200 */
+}
+
+.btn-active {
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+  transition: background-color 0.15s;
+  background-color: #2563eb; /* blue-600 */
+  color: white;
+  border-color: #2563eb;
+}
+
+
 .femecub-bold-font {
   font-family: apotek-extended, sans-serif;
   font-weight: 300;

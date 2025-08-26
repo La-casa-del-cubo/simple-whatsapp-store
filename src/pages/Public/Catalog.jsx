@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { SupabaseContext } from "../../contexts/SupabaseContext";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import DynamicCubeTitle from "../../components/DynamicCubeTitle.jsx";
 
 export default function Catalog() {
     const supabase = useContext(SupabaseContext);
@@ -170,7 +171,7 @@ export default function Catalog() {
 
                 {/* Tipo */}
                 <div className="mb-6">
-                    <label className="block font-semibold mb-2">Tipo</label>
+                    <label className="block font-semibold mb-2">Marca</label>
                     <select
                         value={filters.type || ""}
                         onChange={(e) => {
@@ -236,6 +237,7 @@ export default function Catalog() {
 
             {/* Productos */}
             <section className="flex-1">
+                <DynamicCubeTitle title="Cátalogo" />
                 {loading ? (
                     <div className="text-center py-20">Cargando productos...</div>
                 ) : products.length === 0 ? (
