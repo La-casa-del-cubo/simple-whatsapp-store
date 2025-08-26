@@ -46,7 +46,6 @@ export default function ProductDetail() {
 
             if (error) throw error;
             const colorName = selectedColorId || "Original";
-            console.log(product)
 
             const phone = whatsappConfig?.phone_number || "+5210000000000";
             const defaultMessage = whatsappConfig?.default_message || "Hola, me interesa este producto.";
