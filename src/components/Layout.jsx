@@ -1,12 +1,9 @@
-
-import PublicMarquee from "./PublicMarquee.jsx";
-import AdminSideMenu from "./AdminSideMenu.jsx";
-import {useUser} from "../hooks/useUser.jsx";
-
-import { useEffect, useState, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { SupabaseContext } from "../contexts/SupabaseContext";
-
+import PublicMarquee from "./PublicMarquee.jsx";
+import AdminSideMenu from "./AdminSideMenu.jsx";
+import { useUser } from "../hooks/useUser.jsx";
 
 const officialColors = [
     "#ff0000", // rojo
@@ -14,15 +11,15 @@ const officialColors = [
     "#ffff00", // amarillo
     "#00bb00", // verde
     "#0000bb", // azul
-]
+];
 
 // Suavizar colores para estética más agradable
 function softenColor(hex, percent = 0.6) {
-    const num = parseInt(hex.replace("#", ""), 16)
-    const r = Math.round(((num >> 16) & 255) * (1 - percent) + 255 * percent)
-    const g = Math.round(((num >> 8) & 255) * (1 - percent) + 255 * percent)
-    const b = Math.round((num & 255) * (1 - percent) + 255 * percent)
-    return `rgb(${r},${g},${b})`
+    const num = parseInt(hex.replace("#", ""), 16);
+    const r = Math.round(((num >> 16) & 255) * (1 - percent) + 255 * percent);
+    const g = Math.round(((num >> 8) & 255) * (1 - percent) + 255 * percent);
+    const b = Math.round((num & 255) * (1 - percent) + 255 * percent);
+    return `rgb(${r},${g},${b})`;
 }
 
 function MenuItem({ to, label, idx }) {
@@ -31,13 +28,13 @@ function MenuItem({ to, label, idx }) {
 
     // Aleatoriza colores para el cubo 2x2
     const shuffled = (() => {
-        const arr = [...colors]
+        const arr = [...colors];
         for (let i = arr.length - 1; i > 0; i--) {
-            let j = Math.floor(Math.random() * (i + 1))
-            ;[arr[i], arr[j]] = [arr[j], arr[i]]
+            let j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
         }
-        return arr.slice(0, 4)
-    })()
+        return arr.slice(0, 4);
+    })();
 
     return (
         <Link
@@ -47,8 +44,8 @@ function MenuItem({ to, label, idx }) {
         >
             <svg width={28} height={28} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 {shuffled.map((color, i) => {
-                    const x = (i % 2) * 12
-                    const y = Math.floor(i / 2) * 12
+                    const x = (i % 2) * 12;
+                    const y = Math.floor(i / 2) * 12;
                     return (
                         <rect
                             key={i}
@@ -62,19 +59,19 @@ function MenuItem({ to, label, idx }) {
                             stroke="#000"
                             strokeWidth={0.7}
                         />
-                    )
+                    );
                 })}
             </svg>
             <span>{label}</span>
         </Link>
-    )
+    );
 }
-
 
 export default function Layout({ children }) {
     const { user, isAdmin } = useUser();
     const supabase = useContext(SupabaseContext);
     const [menuPages, setMenuPages] = useState([]);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         async function fetchMenuPages() {
@@ -90,46 +87,68 @@ export default function Layout({ children }) {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        // Puedes agregar redirección aquí si quieres, por ejemplo a login
         window.location.href = "/";
     };
-
 
     return (
         <div className="min-h-screen flex flex-col">
             <header className="bg-gray-900 shadow sticky top-0 z-50">
                 <PublicMarquee />
-                <nav className="max-w-6xl mx-auto flex items-center h-16 space-x-6">
+
+                <nav className="max-w-6xl mx-auto flex items-center h-16 justify-between px-4">
                     <div className="flex items-center space-x-2">
-                        <img
-                            src="/logo.png"
-                            alt="Logo de la tienda"
-                            className="w-10 h-10 object-contain"
-                        />
-                        <Link
-                            to="/"
-                            className="text-white text-lg font-bold select-none"
-                            aria-label="Inicio"
-                        >
+                        <img src="/logo.png" alt="Logo de la tienda" className="w-10 h-10 object-contain" />
+                        <Link to="/" className="text-white text-lg font-bold select-none" aria-label="Inicio">
                             La casa del cubo
                         </Link>
                     </div>
 
-                    {menuPages.map((page, idx) => (
+                    {/* Botón hamburguesa visible solo en móvil */}
+                    <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="text-white md:hidden focus:outline-none"
+                        aria-label="Abrir menú"
+                    >
+                        {/* Icono hamburguesa simple */}
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            {mobileMenuOpen ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            )}
+                        </svg>
+                    </button>
 
+                    {/* Menú principal en desktop */}
+                    <div className="hidden md:flex items-center space-x-6">
+                        {menuPages.map((page, idx) => (
                             <MenuItem key={page.page_name} to={`/pages/${page.page_name}`} label={page.title} idx={idx} />
-                    ))}
+                        ))}
 
-                    {isAdmin && (user && (
-                                <button
-                                    onClick={handleLogout}
-                                    className="bg-red-600 px-3 py-1 rounded hover:bg-red-700"
-                                >
+                        {isAdmin && user && (
+                            <button onClick={handleLogout} className="bg-red-600 px-3 py-1 rounded hover:bg-red-700">
+                                Cerrar sesión
+                            </button>
+                        )}
+                    </div>
+                </nav>
+
+                {/* Menú móvil desplegable */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden bg-gray-900 shadow-md">
+                        <nav className="flex flex-col p-4 space-y-2">
+                            {menuPages.map((page, idx) => (
+                                <MenuItem key={page.page_name} to={`/pages/${page.page_name}`} label={page.title} idx={idx} />
+                            ))}
+
+                            {isAdmin && user && (
+                                <button onClick={handleLogout} className="bg-red-600 px-3 py-1 rounded hover:bg-red-700 mt-2">
                                     Cerrar sesión
                                 </button>
-                            )
-                    )}
-                </nav>
+                            )}
+                        </nav>
+                    </div>
+                )}
             </header>
 
             <div className="flex flex-1">
