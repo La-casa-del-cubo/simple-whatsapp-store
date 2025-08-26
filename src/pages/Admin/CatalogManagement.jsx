@@ -230,7 +230,9 @@ export default function CatalogManagement() {
                         shape_id: formData.shape_id,
                     })
                     .eq("id", productId);
-                if (error) throw error;
+                if (error){
+                    console.error("Error actualizando producto:", error.message);
+                }
 
                 // Borra imágenes marcadas para eliminar
                 await deleteImages(imagesToDelete);
@@ -251,7 +253,9 @@ export default function CatalogManagement() {
                     ])
                     .select()
                     .single();
-                if (error) throw error;
+                if (error) {
+                    console.error("Error creando producto:", error.message);
+                }
                 productId = data.id;
             }
 
@@ -347,11 +351,7 @@ export default function CatalogManagement() {
 
             if (uploadError) throw new Error(`Error subiendo imagen ${file.name}: ${uploadError.message}`);
 
-            const { data: urlData } = supabase.storage
-                .from("product-images")
-                .getPublicUrl(fileName);
-
-            uploadedUrls.push(urlData.publicUrl);
+            uploadedUrls.push(`${fileName}.${fileExt}`);
         }
         return uploadedUrls;
     }

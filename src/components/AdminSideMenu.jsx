@@ -1,6 +1,6 @@
-import { useContext } from "react";
+
 import { Link, useLocation } from "react-router-dom";
-import { SupabaseContext } from "../contexts/SupabaseContext";
+
 
 // Opcional: Recibe prop user o saca del contexto si tienes hook global de usuario/admin
 export default function AdminSideMenu({ isAdmin }) {
@@ -9,7 +9,7 @@ export default function AdminSideMenu({ isAdmin }) {
     if (!isAdmin) return null;
 
     const menuItems = [
-        { name: "Marquee", path: "/admin/banner" },
+        // { name: "Marquee", path: "/admin/banner" },
         { name: "Gestión del Catálogo", path: "/admin/catalog" },
         { name: "Catálogo", path: "/" },
         { name: "Configuración WhatsApp", path: "/admin/whatsapp" },

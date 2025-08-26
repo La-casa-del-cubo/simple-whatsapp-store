@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useContext } from "react";
 import { SupabaseContext } from "../../contexts/SupabaseContext";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -12,9 +13,9 @@ export default function Catalog() {
     const [modalities, setModalities] = useState([]);
     const [types, setTypes] = useState([]);
     const [shapes, setShapes] = useState([]);
-    const [colors, setColors] = useState([]);
+    const [, setColors] = useState([]);
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
     const [filters, setFilters] = useState({
@@ -84,22 +85,6 @@ export default function Catalog() {
         }
 
         setLoading(false);
-    }
-
-    function toggleColorFilter(colorId) {
-        setFilters((prev) => {
-            const newColors = prev.colors.includes(colorId)
-                ? prev.colors.filter((c) => c !== colorId)
-                : [...prev.colors, colorId];
-            return { ...prev, colors: newColors };
-        });
-        let newColors = [...filters.colors];
-        if (newColors.includes(colorId)) {
-            newColors = newColors.filter((id) => id !== colorId);
-        } else {
-            newColors.push(colorId);
-        }
-        updateFilter("colors", newColors);
     }
 
     function updateFilter(key, value) {
@@ -209,29 +194,6 @@ export default function Catalog() {
                             </option>
                         ))}
                     </select>
-                </div>
-
-                {/* Colores */}
-                <div>
-                    <label className="block font-semibold mb-2">Colores</label>
-                    <div className="flex flex-wrap gap-2 max-h-40 overflow-auto">
-                        {colors.map((color) => (
-                            <label key={color.id} className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={filters.colors.includes(color.id)}
-                                    onChange={() => toggleColorFilter(color.id)}
-                                    className="cursor-pointer"
-                                />
-                                <span
-                                    className="w-5 h-5 rounded"
-                                    style={{ backgroundColor: color.hex_code || "#ccc" }}
-                                    title={color.name}
-                                />
-                                <span>{color.name}</span>
-                            </label>
-                        ))}
-                    </div>
                 </div>
             </aside>
 

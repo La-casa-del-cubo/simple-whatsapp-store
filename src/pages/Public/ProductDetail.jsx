@@ -2,7 +2,6 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { SupabaseContext } from "../../contexts/SupabaseContext";
 import {useImageUrls} from "../../hooks/useImagesUrls.jsx";
-import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ProductImagesCarousel from "../../components/ProductImageCarousel.jsx";
@@ -23,15 +22,6 @@ export default function ProductDetail() {
     const searchParams = new URLSearchParams(location.search);
     const previousFilters = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
-    const settings = {
-        dots: true,
-        infinite: true,
-        speed: 300,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        arrows: true,
-    };
-
     const [loadingWhatsApp, setLoadingWhatsApp] = useState(false);
 
     async function handleWhatsAppClick() {
@@ -44,7 +34,9 @@ export default function ProductDetail() {
                 .limit(1)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error("Error cargando producto:", error.message);
+            }
             const colorName = selectedColorId || "Original";
 
             const phone = whatsappConfig?.phone_number || "+5210000000000";
@@ -52,11 +44,11 @@ export default function ProductDetail() {
             const message = `${defaultMessage}\n
             Nombre: ${product.name}\n
             Descripción: ${product.description || "Sin descripción"}\n
-            Marca: ${product.categories.name}\n
-            Tipo: ${product.types.name}\n
-            Shape: ${product.shapes.name}\n
+            Categoria: ${product.categories.name}\n
+            Marca: ${product.types.name}\n
+            Figura: ${product.shapes.name}\n
             Precio: $${product.price}\n
-            Color seleccionado: ${colorName}\n
+            ${colorName ? "Color seleccionado:" + colorName : ""}
             ¿Me puedes ayudar con la compra?
             `.trim();
 
@@ -96,16 +88,7 @@ export default function ProductDetail() {
                 if (data.product_images?.length) {
                     // Extrae solo el filePath desde la columna image_url
                     setImageFilePaths(data.product_images.map(img => {
-                        // Si guardaste la url completa, extrae solo el path:
-                        try {
-                            const url = new URL(img.image_url);
-                            // Asume que el filePath son los segmentos después de /object/product-images/
-                            const pathMatch = url.pathname.match(/\/object\/product-images\/(.+)/);
-                            return pathMatch ? pathMatch[1] : img.image_url;
-                        } catch {
-                            // Si ya es un path, úsalo directamente
-                            return img.image_url;
-                        }
+                        return img.image_url;
                     }));
                 } else {
                     setImageFilePaths([]);
