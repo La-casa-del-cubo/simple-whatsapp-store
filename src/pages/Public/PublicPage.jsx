@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import { SupabaseContext } from "../../contexts/SupabaseContext"
 import DOMPurify from "dompurify"
 import DynamicCubeTitle from "../../components/DynamicCubeTitle.jsx";
+import {Helmet} from "react-helmet";
 
 export default function PublicPage() {
     const { slug } = useParams()
@@ -28,9 +29,19 @@ export default function PublicPage() {
     if (!page) return <p>Página no encontrada.</p>
 
     return (
-        <article className="prose max-w-none mx-auto p-6">
-            <DynamicCubeTitle title={page.title} isDynamic={true}/>
-            <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }} />
-        </article>
+        <>
+            <Helmet>
+                <title>{page.title ? `${page.title} - La casa del cubo` : "La casa del cubo"}</title>
+                <meta name="description" content={`Contenido de ${page.title}`} />
+            </Helmet>
+
+            <article className="prose max-w-none mx-auto p-6">
+                <DynamicCubeTitle title={page.title} isDynamic={true} />
+                <div
+                    className="whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }}
+                />
+            </article>
+        </>
     )
 }
