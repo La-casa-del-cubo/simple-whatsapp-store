@@ -6,13 +6,12 @@ import Catalog from "./pages/Public/Catalog";
 import Cart from "./pages/Public/Cart";
 import AboutUs from "./pages/Public/AboutUs";
 import About from "./pages/Public/About";
-import CatalogManagement from "./pages/Admin/CatalogManagement";
-import WhatsAppSettings from "./pages/Admin/WhatsAppSettings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProductForm from "./pages/Admin/AdminProductForm.jsx";
 import ProductDetail from "./pages/Public/ProductDetail.jsx";
-import Marquee from "./pages/Admin/Marquee.jsx";
 import MarqueeTipTap from "./pages/Admin/MarqueeTipTap.jsx";
+import AdminWhatsApp from "./pages/Admin/WhatsAppSettings";
+import CatalogManagement from "./pages/Admin/CatalogManagement.jsx";
 
 function App() {
     return (
@@ -39,14 +38,6 @@ function App() {
                         }
                     />
                     <Route
-                        path="/admin/supercatalog"
-                        element={
-                            <ProtectedRoute>
-                                <AdminProductForm />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
                         path="/admin/banner"
                         element={
                             <ProtectedRoute>
@@ -58,7 +49,7 @@ function App() {
                         path="/admin/whatsapp"
                         element={
                             <ProtectedRoute>
-                                <WhatsAppSettings />
+                                <AdminWhatsApp />
                             </ProtectedRoute>
                         }
                     />

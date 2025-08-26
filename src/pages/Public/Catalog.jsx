@@ -244,11 +244,7 @@ export default function Catalog() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                         {products.map((p) => (
                             <div key={p.id} className="bg-white rounded shadow p-4 flex flex-col">
-                                <img
-                                    src={p.image_url || "/placeholder.jpg"}
-                                    alt={p.name}
-                                    className="h-48 object-cover rounded mb-3"
-                                />
+                                {/*Aquí va el carrusel*/}
                                 <Link
                                     to={`/product/${p.id}${location.search}`}
                                     className="text-blue-600 hover:underline"

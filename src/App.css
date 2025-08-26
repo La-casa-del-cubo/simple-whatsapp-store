@@ -4,6 +4,16 @@
   padding: 2rem;
   text-align: center;
 }
+.zoom-image {
+  transition: transform 0.3s ease;
+}
+
+.zoom-image:hover {
+  transform: scale(2); /* escala a 2x o ajustar */
+  z-index: 10;
+  position: relative;
+}
+
 
 .logo {
   height: 6em;
