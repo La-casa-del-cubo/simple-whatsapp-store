@@ -12,7 +12,6 @@ export default function Catalog() {
     const [categories, setCategories] = useState([]);
     const [modalities, setModalities] = useState([]);
     const [types, setTypes] = useState([]);
-    const [shapes, setShapes] = useState([]);
     const [, setColors] = useState([]);
 
     const [searchParams] = useSearchParams();
@@ -22,7 +21,6 @@ export default function Catalog() {
         category: searchParams.get("category") || null,
         modality: searchParams.get("modality") || null,
         type: searchParams.get("type") || null,
-        shape: searchParams.get("shape") || null,
         colors: searchParams.get("colors")
             ? searchParams.get("colors").split(",").map(Number)
             : [],
@@ -42,7 +40,6 @@ export default function Catalog() {
             setCategories(await fetchTable("categories"));
             setModalities(await fetchTable("modalities"));
             setTypes(await fetchTable("types"));
-            setShapes(await fetchTable("shapes"));
             setColors(await fetchTable("colors"));
         };
         fetchFilters();
@@ -61,7 +58,6 @@ export default function Catalog() {
       categories(name),
       modalities(name),
       types(name),
-      shapes(name),
       product_colors(color_id, colors(name, hex_code))
     `);
 
@@ -69,7 +65,6 @@ export default function Catalog() {
         if (filters.category) query = query.eq("category_id", filters.category);
         if (filters.modality) query = query.eq("modality_id", filters.modality);
         if (filters.type) query = query.eq("type_id", filters.type);
-        if (filters.shape) query = query.eq("shape_id", filters.shape);
 
         if (filters.colors.length > 0) {
             // Filtrar productos que tengan al menos uno de los colores seleccionados
@@ -96,7 +91,6 @@ export default function Catalog() {
         if (newFilters.category) params.set("category", newFilters.category);
         if (newFilters.modality) params.set("modality", newFilters.modality);
         if (newFilters.type) params.set("type", newFilters.type);
-        if (newFilters.shape) params.set("shape", newFilters.shape);
         if (newFilters.colors.length) params.set("colors", newFilters.colors.join(","));
 
         setFilters(newFilters);
@@ -174,27 +168,6 @@ export default function Catalog() {
                         ))}
                     </select>
                 </div>
-
-                {/* Forma */}
-                <div className="mb-6">
-                    <label className="block font-semibold mb-2">Forma</label>
-                    <select
-                        value={filters.shape || ""}
-                        onChange={(e) => {
-                                updateFilter("shape", e.target.value || null)
-                                setFilters({ ...filters, shape: e.target.value || null })
-                            }
-                        }
-                        className="w-full border rounded p-2"
-                    >
-                        <option value="">Todas</option>
-                        {shapes.map((s) => (
-                            <option key={s.id} value={s.id}>
-                                {s.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
             </aside>
 
             {/* Productos */}
@@ -220,7 +193,6 @@ export default function Catalog() {
                                     {p.categories && <span className="px-2 py-1 bg-gray-100 rounded">{p.categories.name}</span>}
                                     {p.modalities && <span className="px-2 py-1 bg-gray-100 rounded">{p.modalities.name}</span>}
                                     {p.types && <span className="px-2 py-1 bg-gray-100 rounded">{p.types.name}</span>}
-                                    {p.shapes && <span className="px-2 py-1 bg-gray-100 rounded">{p.shapes.name}</span>}
                                     {p.product_colors?.map((pc) => (
                                         <span
                                             key={pc.color_id}

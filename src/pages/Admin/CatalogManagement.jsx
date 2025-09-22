@@ -27,13 +27,6 @@ export default function CatalogManagement() {
     const [newTypeDescription, setNewTypeDescription] = useState("");
     const [newTypeError, setNewTypeError] = useState(null);
 
-    // Shapes
-    const [shapes, setShapes] = useState([]);
-    const [showModalShapes, setShowModalShapes] = useState(false);
-    const [newShapeName, setNewShapeName] = useState("");
-    const [newShapeDescription, setNewShapeDescription] = useState("");
-    const [newShapeError, setNewShapeError] = useState(null);
-
     // For image upload & preview
     const [existingImages, setExistingImages] = useState([]); // URLs ya guardadas
     const [imagesToDelete, setImagesToDelete] = useState([]); // URLs marcadas para borrar
@@ -41,7 +34,7 @@ export default function CatalogManagement() {
     const [previewUrls, setPreviewUrls] = useState([]);
     const [uploading, setUploading] = useState(false);
 
-    // Product form data building out with modalities, types, shapes
+    // Product form data building out with modalities, types
     const [formData, setFormData] = useState({
         id: null,
         name: "",
@@ -50,7 +43,6 @@ export default function CatalogManagement() {
         category_id: null,
         modality_id: null,
         type_id: null,
-        shape_id: null,
     });
 
     const [categories, setCategories] = useState([]);
@@ -61,7 +53,6 @@ export default function CatalogManagement() {
         fetchCategories();
         fetchModalities();
         fetchTypes();
-        fetchShapes();
     }, []);
 
     // Fetch functions
@@ -91,12 +82,7 @@ export default function CatalogManagement() {
         if (!error) setTypes(data);
     }
 
-    async function fetchShapes() {
-        const { data, error } = await supabase.from("shapes").select("*").order("name");
-        if (!error) setShapes(data);
-    }
-
-    // Handlers for adding new related entities (category, modality, type, shape)
+    // Handlers for adding new related entities (category, modality, type)
     async function handleAddCategory() {
         setNewCategoryError(null);
         if (!newCategoryName.trim()) {
@@ -115,7 +101,6 @@ export default function CatalogManagement() {
             setNewCategoryDescription("");
             setShowCategoryModal(false);
             setShowModalTypes(false);
-            setShowModalShapes(false);
             setShowModalModalities(false);
         }
     }
@@ -160,26 +145,6 @@ export default function CatalogManagement() {
         }
     }
 
-    async function handleAddShape() {
-        setNewShapeError(null);
-        if (!newShapeName.trim()) {
-            setNewShapeError("El nombre no puede quedar vacío.");
-            return;
-        }
-        const { data, error } = await supabase
-            .from("shapes")
-            .insert([{ name: newShapeName.trim(), description: newShapeDescription.trim() }])
-            .select()
-            .single();
-        if (error) setNewShapeError(error.message);
-        else {
-            setShapes((prev) => [...prev, data]);
-            setNewShapeName("");
-            setNewShapeDescription("");
-            setShowModalShapes(false);
-        }
-    }
-
     // Image upload & preview handlers omitted for brevity - use previous code
 
     function resetForm() {
@@ -191,7 +156,6 @@ export default function CatalogManagement() {
             category_id: null,
             modality_id: null,
             type_id: null,
-            shape_id: null,
         });
         setError(null);
 
@@ -227,7 +191,6 @@ export default function CatalogManagement() {
                         category_id: formData.category_id,
                         modality_id: formData.modality_id,
                         type_id: formData.type_id,
-                        shape_id: formData.shape_id,
                     })
                     .eq("id", productId);
                 if (error){
@@ -248,7 +211,6 @@ export default function CatalogManagement() {
                             category_id: formData.category_id,
                             modality_id: formData.modality_id,
                             type_id: formData.type_id,
-                            shape_id: formData.shape_id,
                         },
                     ])
                     .select()
@@ -281,7 +243,6 @@ export default function CatalogManagement() {
             category_id: product.category_id,
             modality_id: product.modality_id,
             type_id: product.type_id,
-            shape_id: product.shape_id,
         });
         setError(null);
         setSelectedFiles([]);
@@ -343,7 +304,7 @@ export default function CatalogManagement() {
 
         for (const file of selectedFiles) {
             const fileExt = file.name.split(".").pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 
             const { error: uploadError } = await supabase.storage
                 .from("product-images")
@@ -351,7 +312,7 @@ export default function CatalogManagement() {
 
             if (uploadError) throw new Error(`Error subiendo imagen ${file.name}: ${uploadError.message}`);
 
-            uploadedUrls.push(`${fileName}.${fileExt}`);
+            uploadedUrls.push(`${fileName}`);
         }
         return uploadedUrls;
     }
@@ -490,31 +451,6 @@ export default function CatalogManagement() {
                             {types.map((t) => (
                                 <option key={t.id} value={t.id}>
                                     {t.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="flex justify-between items-center text-sm font-semibold mb-2">
-                            Forma
-                            <button
-                                type="button"
-                                onClick={() => setShowModalShapes(true)}
-                                className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
-                            >
-                                + Nueva
-                            </button>
-                        </label>
-                        <select
-                            value={formData.shape_id ?? ""}
-                            onChange={(e) => setFormData({ ...formData, shape_id: e.target.value || null })}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-                        >
-                            <option value="">Seleccione forma</option>
-                            {shapes.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                    {s.name}
                                 </option>
                             ))}
                         </select>
@@ -667,34 +603,6 @@ export default function CatalogManagement() {
                 />
             )}
 
-            {showModalShapes && (
-                <Modal
-                    title="Agregar Nueva Forma"
-                    onClose={() => {
-                        setShowModalShapes(false);
-                        setNewShapeName("");
-                        setNewShapeDescription("");
-                        setNewShapeError(null);
-                    }}
-                    onSave={handleAddShape}
-                    error={newShapeError}
-                    input={[
-                        {
-                            label: "Nombre de la forma",
-                            value: newShapeName,
-                            onChange: (e) => setNewShapeName(e.target.value),
-                            type: "text",
-                        },
-                        {
-                            label: "Descripción de la forma (opcional)",
-                            value: newShapeDescription,
-                            onChange: (e) => setNewShapeDescription(e.target.value),
-                            type: "textarea",
-                        },
-                    ]}
-                />
-            )}
-
             {/* Table section styled */}
             {loading ? (
                 <p className="text-center mt-6">Cargando productos...</p>
@@ -721,7 +629,6 @@ export default function CatalogManagement() {
                             <td className="p-3">{categories.find((c) => c.id === product.category_id)?.name || "Sin categoría"}</td>
                             <td className="p-3">{modalities.find((m) => m.id === product.modality_id)?.name || "N/A"}</td>
                             <td className="p-3">{types.find((t) => t.id === product.type_id)?.name || "N/A"}</td>
-                            <td className="p-3">{shapes.find((s) => s.id === product.shape_id)?.name || "N/A"}</td>
                             <td className="p-3 flex space-x-2">
                                 <button
                                     onClick={() => handleEdit(product)}

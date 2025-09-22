@@ -46,7 +46,6 @@ export default function ProductDetail() {
             Descripción: ${product.description || "Sin descripción"}\n
             Categoria: ${product.categories.name}\n
             Marca: ${product.types.name}\n
-            Figura: ${product.shapes.name}\n
             Precio: $${product.price}\n
             ${colorName ? "Color seleccionado:" + colorName : ""}
             ¿Me puedes ayudar con la compra?
@@ -73,7 +72,6 @@ export default function ProductDetail() {
           categories(name),
           modalities(name),
           types(name),
-          shapes(name),
           product_colors(color_id, colors(name, hex_code))
         `)
                 .eq("id", productId)
@@ -147,9 +145,6 @@ export default function ProductDetail() {
                         )}
                         {product.types && (
                             <span className="px-3 py-1 bg-gray-200 rounded">{product.types.name}</span>
-                        )}
-                        {product.shapes && (
-                            <span className="px-3 py-1 bg-gray-200 rounded">{product.shapes.name}</span>
                         )}
                         {product.product_colors.length > 0 && (
                             <select
